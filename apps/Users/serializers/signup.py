@@ -9,7 +9,7 @@ class SignUpSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        exclude = ("user_id", "verified", "is_blocked", "date_registered")
+        exclude = ("id", "verified", "is_blocked", "date_registered", "last_login")
 
     def create(self, validated_data):
         password = validated_data.pop("password")
@@ -31,7 +31,7 @@ class SignUpSerializer(serializers.ModelSerializer):
         return user
 
     def validate(self, attrs):
-        email_exits = User.objects.filter(emailAddress=attrs["emailAddress"]).exists() #type: ignore
+        email_exits = User.objects.filter(email_address=attrs["email_address"]).exists() #type: ignore
         if email_exits:
             raise ValidationError("Email already exits")
 

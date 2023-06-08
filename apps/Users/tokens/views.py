@@ -1,15 +1,13 @@
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 
-User = get_user_model()
+from apps.Users.models import User
 
 
-def create_jwt_pair_for_user(user):
+def create_jwt_token_for_user(user):
     refresh = RefreshToken.for_user(user)
-    
-    tokens = {
+
+    return {
         'access': str(refresh.access_token),
         'refresh': str(refresh)
     }
-
-    return tokens

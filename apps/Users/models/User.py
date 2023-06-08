@@ -1,30 +1,49 @@
-from django.contrib.auth.models import AbstractBaseUser
+import uuid
+
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.core.validators import RegexValidator
 from django.db import models
 
+from apps.Users.Managers.custom_user_manager import CustomUserManager
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
 
-class User(AbstractBaseUser):
+
+class User(AbstractBaseUser, PermissionsMixin):
 
     email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     email_validator = RegexValidator(
         regex=email_regex,
         message='Enter a valid email address.'
     )
-    username_regex = r'^[a-zA-Z0-9_-]+$'
-    username_validator = RegexValidator(
-        regex=username_regex,
-        message='Enter a valid username.'
-    )
 
-    user_id = models.UUIDField(verbose_name="User ID", primary_key=True, unique=True)
-    username = models.CharField(verbose_name='User name', max_length=255, unique=True, validators=[username_validator])
-    emailAddress = models.EmailField(verbose_name="Email Address", max_length=200, unique=True, validators=[email_validator])
-    firstName = models.CharField(verbose_name="First Name", max_length=100)
-    lastName = models.CharField(verbose_name="Last Name", max_length=100)
+    id = models.UUIDField(verbose_name="User ID", primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    email_address = models.EmailField(verbose_name="Email Address", max_length=200, unique=True, validators=[email_validator])
+    first_name = models.CharField(verbose_name="First Name", max_length=100)
+    last_name = models.CharField(verbose_name="Last Name", max_length=100)
     country = models.CharField(verbose_name="Country", max_length=100)
     verified = models.BooleanField(default=False)
     is_blocked = models.BooleanField(default=False)
-    date_registered = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    date_registered = models.DateTimeField(verbose_name="Date registered", auto_now_add=True, blank=False, null=False)
+
+    USERNAME_FIELD = 'email_address'
+    # REQUIRED_FIELDS = []
+    objects = CustomUserManager()
 
     def __str__(self):
-        return self.emailAddress
+        return self.email_address
+
+    def get_full_name(self):
+        return f'{self.first_name} {self.last_name}'
+
+    def get_short_name(self):
+        return self.first_name
+
+    def generate_password_reset_token(self):
+        uid = urlsafe_base64_encode(force_bytes(self.id))
+        token = default_token_generator.make_token(self)
+
+        return uid, token
