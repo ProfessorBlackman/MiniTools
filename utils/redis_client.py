@@ -1,5 +1,6 @@
-from django.conf import settings
+# from django.conf import settings
 from redis import Redis
+from project.settings import CELERY_BROKER_URL
 import redis
 from utils.logging.loggers import redis_logger
 
@@ -7,7 +8,7 @@ redis_client = None
 
 
 try:
-    pool = redis.ConnectionPool.from_url(settings.CELERY_BROKER_URL)
+    pool = redis.ConnectionPool.from_url(CELERY_BROKER_URL)
 
     with Redis(connection_pool=pool) as client:
         redis_client = client

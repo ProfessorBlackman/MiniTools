@@ -2,6 +2,8 @@ import os
 from datetime import timedelta
 from pathlib import Path
 from decouple import config
+from logging import FileHandler
+from django.utils.log import ServerFormatter
 
 from utils.logging.custom_logging import DefaultJsonFormatter, DetailedJsonFormatter
 
@@ -37,6 +39,7 @@ INSTALLED_APPS = [
     'django_extensions',
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
+    'silk',
 
     #     Custom apps
     'apps.Users.apps.UsersConfig',
@@ -52,8 +55,10 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     "django.middleware.gzip.GZipMiddleware",
+    'silk.middleware.SilkyMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -108,6 +113,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+PASSWORD_RESET_TIMEOUT = 1800
+
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
@@ -117,7 +124,7 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 # Media Files
@@ -154,6 +161,7 @@ SIMPLE_JWT = {
 
 # celery configurations
 CELERY_CONFIG_MODULE = 'myproject.celeryconfig'
+CELERY_BROKER_URL = config("CELERY_BROKER_URL")
 
 # Redis configuration
 REDIS_CONFIG = {
@@ -179,19 +187,22 @@ log_files = {
     "tasks_critical_log": create_path("tasks_critical.log"),
     "worker_info_log": create_path("worker_info.log"),
     "website_info_log": create_path("websites_scraped.log"),
-    "MiniTools": create_path("minitools.log"),
+    "mini": create_path("minitools.log"),
     "database": create_path("database.log")
 }
 
-file_handlers = "logging.FileHandler"
+for file_path in log_files.values():
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+file_handlers = FileHandler
 
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "root": {
-        "handlers": ["console", "IMP"],
-        "level": "DEBUG",
-    },
+    # "root": {
+    #     "handlers": ["console", "MiniTools"],
+    #     "level": "DEBUG",
+    # },
     "formatters": {
         "simple": {
             "format": "{levelname}: {message}",
@@ -208,71 +219,90 @@ LOGGING = {
         },
         "detailed_json_formatter": {"()": DetailedJsonFormatter},
     },
-    "filters": {},
+    "filters": {
+        "require_debug_false": {
+            "()": "django.utils.log.RequireDebugFalse",
+        }
+    },
     "handlers": {
         "console": {
             "level": "DEBUG",
             "class": "logging.StreamHandler",
             "formatter": "default",
         },
+        "mail_admins": {
+            'level': 'ERROR',
+            "filters": ["require_debug_false"],
+            'class': 'django.utils.log.AdminEmailHandler',
+            'include_html': True,
+        },
         "tasks_info": {
             "level": "DEBUG",
-            "class": file_handlers,
+            "class": "logging.FileHandler",
             "filename": log_files["tasks_info_log"],
             "formatter": "default_json_formatter",
         },
         "tasks_errors": {
             "level": "ERROR",
-            "class": file_handlers,
+            "class": "logging.FileHandler",
             "filename": log_files["tasks_errors_log"],
             "formatter": "default_json_formatter",
         },
         "tasks_critical": {
             "level": "CRITICAL",
-            "class": file_handlers,
+            "class": "logging.FileHandler",
             "filename": log_files["tasks_critical_log"],
             "formatter": "default_json_formatter",
         },
         "tasks_warnings": {
             "level": "WARNING",
-            "class": file_handlers,
+            "class": "logging.FileHandler",
             "filename": log_files["tasks_warnings_log"],
             "formatter": "default_json_formatter",
         },
         "worker_info": {
             "level": "INFO",
-            "class": file_handlers,
+            "class": "logging.FileHandler",
             "filename": log_files["worker_info_log"],
             "formatter": "default_json_formatter",
         },
-
         "MiniTools": {
-            "level": "DEBUG",
-            "class": file_handlers,
-            "filename": log_files["MiniTools"],
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": log_files["mini"],
             "formatter": "default_json_formatter",
         },
         "database": {
             "level": "DEBUG",
-            "class": file_handlers,
+            "class": "logging.FileHandler",
             "filename": log_files["database"],
             "formatter": "default_json_formatter",
-        }
+        },
     },
     "loggers": {
-        # "django.db.backends": {
-        #     "handlers": ["console"],
-        #     "level": "DEBUG",
-        #     "propagate": True,
-        # },
-        "log_tasks_info": {"handlers": ["console", "tasks_info"]},
-        "log_tasks_error": {"handlers": ["console", "tasks_errors"]},
-        "log_tasks_warning": {"handlers": ["console", "tasks_warnings"]},
-        "log_tasks_critical": {"handlers": ["console", "tasks_critical"]},
-        "log_worker": {"handlers": ["console", "worker_info"]},
-        # "log_minitools": {"handlers": ["console", "MiniTools"]},
+        "tasks_info": {"handlers": ["console", "tasks_info"]},
+        "tasks_error": {"handlers": ["console", "tasks_errors"]},
+        "tasks_warning": {"handlers": ["console", "tasks_warnings"]},
+        "tasks_critical": {"handlers": ["console", "tasks_critical"]},
+        "worker": {"handlers": ["console", "worker_info"]},
+        "minitools": {"handlers": ["console", "MiniTools"]},
         "db_logger": {"handlers": ["console", "database"]}
     },
+
 }
 
 FRONTEND_DOMAIN = config("FRONTEND_DOMAIN")
+
+# silk config
+SILKY_PYTHON_PROFILER = True
+SILKY_PYTHON_PROFILER_BINARY = True
+SILKY_PYTHON_PROFILER_RESULT_PATH = '/profiles'
+SILKY_PYTHON_PROFILER_EXTENDED_FILE_NAME = True
+
+# django cache config
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379",
+    }
+}

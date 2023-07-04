@@ -5,9 +5,6 @@ from django.core.validators import RegexValidator
 from django.db import models
 
 from apps.Users.Managers.custom_user_manager import CustomUserManager
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -41,9 +38,3 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_short_name(self):
         return self.first_name
-
-    def generate_password_reset_token(self):
-        uid = urlsafe_base64_encode(force_bytes(self.id))
-        token = default_token_generator.make_token(self)
-
-        return uid, token

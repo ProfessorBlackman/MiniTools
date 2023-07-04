@@ -4,6 +4,7 @@ from rest_framework.response import Response
 
 from exceptions.base_custom_exception import BaseCustomException
 from ..serializers.confirm_user import ConfirmUserSerializer
+from ..tasks.send_emails_task import send_email_task
 from ..utils.activate_user_account import activate_user_account
 from ..utils.get_otp import get_otp
 
@@ -17,9 +18,12 @@ class ConfirmUser(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         data = request.data
         user_otp = data.get("otp")
+        print(f"This is user {user_otp}")
+        print(f"This is user {type(user_otp)}")
         email = data.get("email")
         try:
             otp = get_otp(email=email)
+            print(f"This is otp: {otp}")
         except:
             response = {"status": "error", "error": "Invalid Email"}
             return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
@@ -27,11 +31,14 @@ class ConfirmUser(generics.GenericAPIView):
             raise BaseCustomException(
                 detail="Your Otp has expired, Login to generate a new one", code=status.HTTP_400_BAD_REQUEST
             )
-        elif otp != user_otp:
+        if otp != int(user_otp):
             response = {"status": "error", "data": "invalid otp"}
             return Response(data=response, status=status.HTTP_406_NOT_ACCEPTABLE)
         else:
             activate_user_account(email=email)
+            send_email_task(email, 'welcome.html',
+                            'Your Account Has Been Confirmed'
+                            )
             response = {
                 "status": "success",
                 "data": f"The email: {email} has been confirmed",

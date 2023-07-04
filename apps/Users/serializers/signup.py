@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from rest_framework.validators import ValidationError
+from django.contrib.auth import get_user_model
 
-from apps.Users.models.User import User
+User = get_user_model()
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -9,7 +10,8 @@ class SignUpSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        exclude = ("id", "verified", "is_blocked", "date_registered", "last_login")
+        fields = ['email_address', 'first_name', 'last_name', 'country', 'password']
+        # exclude = ("id", "verified", "is_blocked", "date_registered", "last_login")
 
     def create(self, validated_data):
         password = validated_data.pop("password")

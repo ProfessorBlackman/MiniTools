@@ -1,10 +1,7 @@
 from django.urls import path
-from rest_framework_simplejwt.views import (
-    TokenRefreshView,
-    TokenVerifyView
-)
+
+from apps.BitLink.views.shorten_url_view import ShortenUrl
 
 urlpatterns = [
-    path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('verify/', TokenVerifyView.as_view(), name='token_verify'),
+    path('shorten/', ShortenUrl.as_view(), name='token_refresh'),
 ]
