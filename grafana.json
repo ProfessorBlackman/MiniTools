@@ -1,0 +1,52 @@
+{
+  "id": null,
+  "title": "Logging Metrics Dashboard",
+  "panels": [
+    {
+      "id": 1,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 6
+      },
+      "type": "graph",
+      "title": "Log Entries by Level",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum by (level) (app_log_entries)",
+          "legendFormat": "{{ level }}"
+        }
+      ],
+      "legend": {
+        "show": true
+      },
+      "yaxes": [
+        {
+          "format": "short"
+        },
+        {}
+      ],
+      "xaxis": {},
+      "options": {},
+      "tooltip": {
+        "shared": true
+      }
+    }
+  ],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": []
+  },
+  "schemaVersion": 25,
+  "version": 0
+}
