@@ -3,9 +3,11 @@ import string
 
 from decouple import config
 
+from apps.BitLink.utils.generate_slug import generate_slug
+
 
 #  function to generate short url from long url
-def urlgen(long):
+def urlgen():
     """
         Generates a short url
 
@@ -22,11 +24,8 @@ def urlgen(long):
         tuple
             returns a tuple of (new_url, result_str).
         """
-    characters = string.ascii_letters + string.digits + string.punctuation
-    result_str = ''.join(secrets.choice(characters) for _ in range(6))  # generate slug from ascii
+    result_str = generate_slug()
     # characters
     new_url = f'{config("DOMAIN")}{result_str}'
-    print("Random string of length", long, "is:", result_str)
-    print(new_url)
 
     return new_url, result_str

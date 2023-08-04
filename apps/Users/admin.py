@@ -1,6 +1,7 @@
 from django.contrib import admin
 from rest_framework_simplejwt import token_blacklist
 
+
 from apps.Users.models.User import User
 
 

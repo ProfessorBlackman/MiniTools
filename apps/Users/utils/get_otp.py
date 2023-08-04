@@ -8,9 +8,11 @@ from utils.redis_client import redis_client as redis
 # function to generate OTP and send it
 def get_otp(email):
     otp = ""
+    print(f"this is redis {redis.exists(f'{email}')}")
     if redis.exists(f"{email}"):
         try:
             otp_bytes = redis.get(f"{email}")
+            print(otp_bytes)
             if otp_bytes is not None:
                 otp = int(otp_bytes.decode("utf-8"))
             print(f"This is otp: {otp}")

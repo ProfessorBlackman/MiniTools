@@ -5,17 +5,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from ..models.urlmodel import UrlData
-from ..serializers.redirect_serializer import RedirectUrlSerializer
 
 
 #  view for redirecting to long_url in browser
 class RedirectUrl(APIView):
-    serializer_class = RedirectUrlSerializer
 
     @swagger_auto_schema(operation_summary='redirecting to long url')
     def get(self, request, slug):
-        data = request.data
-        self.serializer_class(data=data)
+        global url_data
 
         if UrlData.objects.filter(slug=slug).exists():  # checking if object with slug exists in database
             try:
@@ -31,3 +28,8 @@ class RedirectUrl(APIView):
                 }
                 return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
             return HttpResponseRedirect(long)
+        response = {
+            'status': 'error',
+            'errors': 'url not recognized'
+        }
+        return Response(data=response, status=status.HTTP_400_BAD_REQUEST)

@@ -25,9 +25,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_registered = models.DateTimeField(verbose_name="Date registered", auto_now_add=True, blank=False, null=False)
+    is_deleted = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email_address'
-    # REQUIRED_FIELDS = []
     objects = CustomUserManager()
 
     def __str__(self):

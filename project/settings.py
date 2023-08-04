@@ -40,10 +40,16 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     'silk',
+    'django_celery_beat',
+    'django_celery_results',
 
     #     Custom apps
     'apps.Users.apps.UsersConfig',
     'apps.BitLink.apps.BitlinkConfig',
+    'apps.logging_app.apps.LoggingAppConfig',
+
+    # Monitoring App
+    "django_prometheus",
 
 ]
 
@@ -58,6 +64,8 @@ MIDDLEWARE = [
     'silk.middleware.SilkyMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 
 ]
 
@@ -160,7 +168,7 @@ SIMPLE_JWT = {
 }
 
 # celery configurations
-CELERY_CONFIG_MODULE = 'myproject.celeryconfig'
+CELERY_CONFIG_MODULE = 'project.celeryconfig'
 CELERY_BROKER_URL = config("CELERY_BROKER_URL")
 
 # Redis configuration
@@ -196,100 +204,7 @@ for file_path in log_files.values():
 
 file_handlers = FileHandler
 
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    # "root": {
-    #     "handlers": ["console", "MiniTools"],
-    #     "level": "DEBUG",
-    # },
-    "formatters": {
-        "simple": {
-            "format": "{levelname}: {message}",
-            "style": "{",
-        },
-        "default": {
-            "format": "[{asctime}] {levelname} {name}: {message}",
-            "style": "{",
-        },
-        "default_json_formatter": {"()": DefaultJsonFormatter},
-        "detailed": {
-            "format": "[{asctime}] {levelname} {module} {funcName} {lineno} {message}",
-            "style": "{",
-        },
-        "detailed_json_formatter": {"()": DetailedJsonFormatter},
-    },
-    "filters": {
-        "require_debug_false": {
-            "()": "django.utils.log.RequireDebugFalse",
-        }
-    },
-    "handlers": {
-        "console": {
-            "level": "DEBUG",
-            "class": "logging.StreamHandler",
-            "formatter": "default",
-        },
-        "mail_admins": {
-            'level': 'ERROR',
-            "filters": ["require_debug_false"],
-            'class': 'django.utils.log.AdminEmailHandler',
-            'include_html': True,
-        },
-        "tasks_info": {
-            "level": "DEBUG",
-            "class": "logging.FileHandler",
-            "filename": log_files["tasks_info_log"],
-            "formatter": "default_json_formatter",
-        },
-        "tasks_errors": {
-            "level": "ERROR",
-            "class": "logging.FileHandler",
-            "filename": log_files["tasks_errors_log"],
-            "formatter": "default_json_formatter",
-        },
-        "tasks_critical": {
-            "level": "CRITICAL",
-            "class": "logging.FileHandler",
-            "filename": log_files["tasks_critical_log"],
-            "formatter": "default_json_formatter",
-        },
-        "tasks_warnings": {
-            "level": "WARNING",
-            "class": "logging.FileHandler",
-            "filename": log_files["tasks_warnings_log"],
-            "formatter": "default_json_formatter",
-        },
-        "worker_info": {
-            "level": "INFO",
-            "class": "logging.FileHandler",
-            "filename": log_files["worker_info_log"],
-            "formatter": "default_json_formatter",
-        },
-        "MiniTools": {
-            "level": "INFO",
-            "class": "logging.FileHandler",
-            "filename": log_files["mini"],
-            "formatter": "default_json_formatter",
-        },
-        "database": {
-            "level": "DEBUG",
-            "class": "logging.FileHandler",
-            "filename": log_files["database"],
-            "formatter": "default_json_formatter",
-        },
-    },
-    "loggers": {
-        "tasks_info": {"handlers": ["console", "tasks_info"]},
-        "tasks_error": {"handlers": ["console", "tasks_errors"]},
-        "tasks_warning": {"handlers": ["console", "tasks_warnings"]},
-        "tasks_critical": {"handlers": ["console", "tasks_critical"]},
-        "worker": {"handlers": ["console", "worker_info"]},
-        "minitools": {"handlers": ["console", "MiniTools"]},
-        "db_logger": {"handlers": ["console", "database"]}
-    },
-
-}
+# Logging was here
 
 FRONTEND_DOMAIN = config("FRONTEND_DOMAIN")
 

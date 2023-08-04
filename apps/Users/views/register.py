@@ -7,9 +7,11 @@ from rest_framework.response import Response
 from silk.profiling.profiler import silk_profile
 
 from apps.Users.serializers.signup import SignUpSerializer
+from apps.Users.services.user_service import UserService
 from apps.Users.tasks.send_emails_task import send_email_task
 from apps.Users.utils.create_otp import create_otp
 from exceptions.base_custom_exception import BaseCustomException
+from utils.logging.loggers import database_logger
 
 
 class CreateUser(generics.GenericAPIView):
@@ -23,22 +25,5 @@ class CreateUser(generics.GenericAPIView):
         """
         view for registering a user
         """
-        data = request.data
-        serializer = self.serializer_class(data=data)
-        email_address = data.get("email_address")
-        extra = {'content': create_otp(email_address),
-                 'domain': f'{settings.FRONTEND_DOMAIN}/confirm?email={email_address}'}
-        if serializer.is_valid():
-            serializer.save()
-            send_email_task(email_address, 'account-confirmation.html',
-                            'MiniTools Account Confirmation',
-                            extra
-                            )
-            print("saved successfully")
-
-            response = {"status": "success", "data": serializer.data}
-            return Response(data=response, status=status.HTTP_201_CREATED)
-
-        raise BaseCustomException(
-            detail=serializer.errors, code=status.HTTP_400_BAD_REQUEST
-        )
+        user_service = UserService(serializer=self.serializer_class)
+        return Response(data=user_service.register(request), status=status.HTTP_201_CREATED)
