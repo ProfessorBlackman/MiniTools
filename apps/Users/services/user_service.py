@@ -33,7 +33,7 @@ class UserService:
             except Exception as e:
                 database_logger.error(e)
                 raise BaseCustomException(
-                    detail=e, code=status.HTTP_400_BAD_REQUEST
+                    message=e, status=status.HTTP_400_BAD_REQUEST
                 )
             try:
                 send_email_task(email_address, 'account-confirmation.html',
@@ -46,7 +46,7 @@ class UserService:
             print("saved successfully")
             return {"status": "success", "data": serializer.data}
         raise BaseCustomException(
-            detail=serializer.errors, code=status.HTTP_400_BAD_REQUEST
+            message=serializer.errors, status=status.HTTP_400_BAD_REQUEST
         )
 
     def login(self, request) -> dict:
@@ -74,11 +74,11 @@ class UserService:
                     }
                 else:
                     raise BaseCustomException(
-                        detail="You are not verified \n Please verify your account", code=status.HTTP_401_UNAUTHORIZED
+                        message="You are not verified \n Please verify your account", status=status.HTTP_401_UNAUTHORIZED
                     )
 
         raise BaseCustomException(
-            detail="Invalid Email or Password", code=status.HTTP_400_BAD_REQUEST
+            message="Invalid Email or Password", status=status.HTTP_400_BAD_REQUEST
         )
 
     def confirm_email_to_reset_password(self, request) -> dict:
@@ -90,7 +90,7 @@ class UserService:
                 user_id = profile.id
             except User.DoesNotExist:
                 raise BaseCustomException(
-                    detail="Invalid Email", code=status.HTTP_400_BAD_REQUEST
+                    message="Invalid Email", status=status.HTTP_400_BAD_REQUEST
                 )
             if profile.email_address == email:
                 uid, token = generate_password_reset_token(profile, user_id)
@@ -102,11 +102,11 @@ class UserService:
 
             else:
                 raise BaseCustomException(
-                    detail="Email doesn't exist", code=status.HTTP_400_BAD_REQUEST
+                    message="Email doesn't exist", status=status.HTTP_400_BAD_REQUEST
                 )
         else:
             raise BaseCustomException(
-                detail="Not an email", code=status.HTTP_400_BAD_REQUEST
+                message="Not an email", status=status.HTTP_400_BAD_REQUEST
             )
         return {"status": "success", "data": f"The email: {email} exists"}
 
@@ -123,7 +123,7 @@ class UserService:
                 print(f"This is user: {user}")
             except User.DoesNotExist:
                 raise BaseCustomException(
-                    detail="User does not exist", code=status.HTTP_400_BAD_REQUEST
+                    message="User does not exist", status=status.HTTP_400_BAD_REQUEST
                 )
             except (TypeError, ValueError, OverflowError):
                 user = None  # TODO: log errors
@@ -138,10 +138,10 @@ class UserService:
                 return {"status": "success", "data": "Password Reset Successfully"}
             else:
                 raise BaseCustomException(
-                    detail="Invalid Token", code=status.HTTP_400_BAD_REQUEST
+                    message="Invalid Token", status=status.HTTP_400_BAD_REQUEST
                 )
         raise BaseCustomException(
-            detail=serializer.errors, code=status.HTTP_400_BAD_REQUEST
+            message=serializer.errors, status=status.HTTP_400_BAD_REQUEST
         )
 
     def confirm_user(self, request) -> dict:
@@ -155,15 +155,15 @@ class UserService:
             print(f"This is otp: {otp}")
         except Exception as e:
             raise BaseCustomException(
-                detail=f"Invalid Email, error: {e}", code=status.HTTP_400_BAD_REQUEST
+                message=f"Invalid Email, error: {e}", status=status.HTTP_400_BAD_REQUEST
             )
         if otp is None:
             raise BaseCustomException(
-                detail="Your Otp has expired, Login to generate a new one", code=status.HTTP_400_BAD_REQUEST
+                message="Your Otp has expired, Login to generate a new one", status=status.HTTP_400_BAD_REQUEST
             )
         if otp != int(user_otp):
             raise BaseCustomException(
-                detail="Invalid otp", code=status.HTTP_400_BAD_REQUEST
+                message="Invalid otp", status=status.HTTP_400_BAD_REQUEST
             )
         else:
             activate_user_account(email=email)

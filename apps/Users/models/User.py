@@ -8,7 +8,6 @@ from apps.Users.Managers.custom_user_manager import CustomUserManager
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-
     email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     email_validator = RegexValidator(
         regex=email_regex,
@@ -16,7 +15,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
 
     id = models.UUIDField(verbose_name="User ID", primary_key=True, unique=True, default=uuid.uuid4, editable=False)
-    email_address = models.EmailField(verbose_name="Email Address", max_length=200, unique=True, validators=[email_validator])
+    email_address = models.EmailField(verbose_name="Email Address", max_length=200, unique=True,
+                                      validators=[email_validator])
     first_name = models.CharField(verbose_name="First Name", max_length=100)
     last_name = models.CharField(verbose_name="Last Name", max_length=100)
     country = models.CharField(verbose_name="Country", max_length=100)

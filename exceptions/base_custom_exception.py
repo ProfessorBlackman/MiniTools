@@ -9,13 +9,13 @@ class BaseCustomException(APIException):
 
     """
 
-    detail = None
+    message = None
     status_code = None
 
-    def __init__(self, *, detail, code):
-        if isinstance(detail, dict):
-            detail = {"detail": detail}
+    def __init__(self, *, message, status):
+        if isinstance(message, dict):
+            message = {"detail": message}
 
-        super().__init__(detail, code)
-        self.detail = detail
-        self.status_code = code
+        super().__init__(message, status)
+        self.message = message
+        self.status_code = status

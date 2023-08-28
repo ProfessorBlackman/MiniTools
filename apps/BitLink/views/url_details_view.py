@@ -4,9 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ..models.urlmodel import UrlData
-from ..serializers.url_details_serializer import UrlDetailsSerializer
-from ...Users.models import User
+from apps.BitLink.serializers.url_details_serializer import UrlDetailsSerializer
+from apps.BitLink.services.url_service import UrlService
 
 
 class UrlDetailsView(APIView):
@@ -15,29 +14,5 @@ class UrlDetailsView(APIView):
 
     @swagger_auto_schema(operation_summary='Get a shortened url\'s details')
     def get(self, request):
-        global user
-        user_email = request.user
-        try:
-            user = User.objects.get(email_address=user_email)
-        except user.DoesNotExist:
-            response = {
-                'status': 'error',
-                'errors': "User does not exist"
-            }
-            return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            urls = UrlData.objects.filter(related_user=user)
-        except Exception as e:
-            response = {
-                'status': 'error',
-                'errors': e
-            }
-            return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
-        serializer = UrlDetailsSerializer(urls, many=True)
-
-        response = {
-            'status': 'success',
-            'data': serializer.data
-        }
-        return Response(data=response, status=status.HTTP_201_CREATED)
+        url_service = UrlService(UrlDetailsSerializer)
+        return Response(data=url_service.read_all(request), status=status.HTTP_201_CREATED)

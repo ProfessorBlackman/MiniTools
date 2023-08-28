@@ -16,7 +16,7 @@ def get_url_details(url: UrlData):
         date_modified = url.date_modified.strftime('%Y-%m-%d %H:%M:%S')
     except Exception as e:
         raise BaseCustomException(
-            detail=e, code=status.HTTP_404_NOT_FOUND
+            message=e, status=status.HTTP_404_NOT_FOUND
         )
 
     return {"short_url": short_url,

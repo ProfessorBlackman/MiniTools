@@ -1,0 +1,28 @@
+version: "3"
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: minitools_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app/modules
+    env_file:
+      - ./.env
+    depends_on:
+      - redis
+
+  redis:
+    image: "redis/redis-stack:latest"
+    container_name: minitools-redis
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - ./redis/data:/data
+    ports:
+      - "5672:5672"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_PORT_NUMBER=5672

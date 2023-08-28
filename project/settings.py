@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'apps.Users.apps.UsersConfig',
     'apps.BitLink.apps.BitlinkConfig',
     'apps.logging_app.apps.LoggingAppConfig',
+    'apps.rapidqr.apps.RapidqrConfig',
 
     # Monitoring App
     "django_prometheus",

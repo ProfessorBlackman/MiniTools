@@ -2,9 +2,9 @@ from apps.BitLink.models.urlmodel import UrlData
 from apps.BitLink.utils.generate_url import urlgen
 
 
-def update_url(data: dict) -> bool:
+def update_url(data: dict) -> UrlData | None:
     if data["id"] is None:
-        return False
+        return None
 
     url_id = data['id']
     long_url = data.get('long_url')
@@ -23,4 +23,4 @@ def update_url(data: dict) -> bool:
         url_data.short_url = short_url
         url_data.slug = slug
     url_data.save()
-    return True
+    return url_data
