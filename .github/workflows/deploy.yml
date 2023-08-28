@@ -1,0 +1,71 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  buildAndTest:
+    name: CI Pipeline
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ["14.x"]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # Initialize Node.js
+      - name: Install Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+  deploy:
+    name: CD Pipeline
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        appname: ["mini-tools"]
+        deploy-group: ["mini-tools-backend"]
+        s3-bucket: ["mini-tools-source-code"]
+        s3-filename:  ["mini-tools-source-code-${{ github.sha }}"]
+
+    needs: buildAndTest
+    steps:
+      - uses: actions/checkout@v2
+
+      # Install AWS CLI 2
+      - name: Install AWS CLI 2
+        run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install --update
+
+      # Configure AWS Credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      # Deploy Push to AWS S3
+      - name: AWS Deploy Push
+        run: |
+          aws deploy push \
+          --application-name ${{ matrix.appname }} \
+          --description "Revision for ${{ matrix.appname }}-${{ github.sha }}" \
+          --ignore-hidden-files \
+          --s3-location s3://${{ matrix.s3-bucket }}/${{ matrix.s3-filename }}.zip \
+          --source .
+
+      - name: AWS Create Deployment
+        run: |
+          aws deploy create-deployment \
+           --application-name ${{ matrix.appname }} \
+           --deployment-config-name CodeDeployDefault.OneAtATime \
+           --deployment-group-name ${{ matrix.deploy-group }} \
+           --file-exists-behavior OVERWRITE \
+           --s3-location bucket=${{ matrix.s3-bucket }},key=${{ matrix.s3-filename }}.zip,bundleType=zip
