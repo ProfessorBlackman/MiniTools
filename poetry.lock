@@ -1012,6 +1012,7 @@ files = [
 
 [package.dependencies]
 colorama = {version = "*", markers = "platform_system == \"Windows\""}
+pillow = {version = ">=9.1.0", optional = true, markers = "extra == \"pil\""}
 pypng = "*"
 typing-extensions = "*"
 
@@ -1243,4 +1244,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11.4"
-content-hash = "8862e69f369027485594476abbd4eaade68bd8438906a43b48abc848b2616381"
+content-hash = "98707cad067f3f183ae387c99eabef5b330d22dfa91056f35616f84c19776d37"

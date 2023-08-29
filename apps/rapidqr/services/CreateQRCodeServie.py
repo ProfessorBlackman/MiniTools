@@ -17,6 +17,10 @@ class YourService(Service):
             border=4,
         )
         qr.add_data(self.request)
+        qr.make(fit=True)
+
+        # Generate the QR code image
+        qr_image = qr.make_image(fill_color="black", back_color="white")
 
     def post_process(self):
         pass
